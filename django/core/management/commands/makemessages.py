@@ -18,7 +18,7 @@ from django.utils.encoding import DEFAULT_LOCALE_ENCODING
 from django.utils.functional import cached_property
 from django.utils.jslex import prepare_js_for_gettext
 from django.utils.text import get_text_list
-from django.utils.translation import templatize
+from django.utils.translation import templatize, to_locale
 
 plural_forms_re = re.compile(r'^(?P<value>"Plural-Forms.+?\\n")\s*$', re.MULTILINE | re.DOTALL)
 STATUS_OK = 0
@@ -329,6 +329,11 @@ class Command(BaseCommand):
         else:
             exts = extensions or ['html', 'txt', 'py']
         self.extensions = handle_extensions(exts)
+
+        # Normalize locale to use POSIX locale format (eg. zh_CN)
+        if locale:
+            language = locale.lower().replace('_', '-')
+            locale = to_locale(language)
 
         if (locale is None and not exclude and not process_all) or self.domain is None:
             raise CommandError(
